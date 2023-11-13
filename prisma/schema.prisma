@@ -13,7 +13,7 @@ datasource db {
 model User {
   uuid        String   @id @default(uuid())
   email       String   @unique
-  name        String?
+  name        String
   password    String
   img_profile String?
   created_at  DateTime @default(now())
@@ -26,7 +26,7 @@ model Post {
   user_uuid   String
   title       String
   content     String
-  img         String?
+  img_post    String?
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
   user        User     @relation(fields: [user_uuid], references: [uuid])
