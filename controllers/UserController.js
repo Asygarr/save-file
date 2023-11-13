@@ -45,24 +45,32 @@ export const createUser = async (req, res) => {
   const { name, email, password, confirmPassword } = req.body;
   console.log(req.file);
 
-  if (!req.body || !req.file)
-    return res.status(400).json({ massage: "Data tidak boleh kosong" });
+  if (!name || !email || !password || !confirmPassword) {
+    return res.status(400).json({ message: "Data tidak boleh kosong" });
+  }
 
   if (password !== confirmPassword) {
-    fs.unlinkSync(req.file.path);
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
     return res.status(400).json({ massage: "Password tidak sama" });
   }
 
   const hashedPassword = await argon.hash(password);
 
   try {
+    const createData = {
+      name,
+      email,
+      password: hashedPassword,
+    };
+
+    if (req.file) {
+      createData.img_profile = req.file.filename;
+    }
+
     const response = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        img_profile: req.file.filename,
-      },
+      data: createData,
       select: {
         uuid: true,
         name: true,
@@ -73,8 +81,10 @@ export const createUser = async (req, res) => {
 
     res.status(200).json({ massage: "User berhasil di buat", data: response });
   } catch (error) {
-    fs.unlinkSync(req.file.path);
-    
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
+
     if (error.code === "P2002") {
       return res.status(400).json({ massage: "Email sudah di gunakan" });
     }
@@ -84,14 +94,77 @@ export const createUser = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   const { id } = req.params;
-  const response = await prisma.user.findUnique({
+  const { name, email, password, confirmPassword } = req.body;
+
+  if (!name || !email || !password || !confirmPassword) {
+    return res.status(400).json({ message: "Data tidak boleh kosong" });
+  }
+
+  const data = await prisma.user.findUnique({
     where: {
       uuid: id,
     },
+    select: {
+      uuid: true,
+      name: true,
+      email: true,
+      img_profile: true,
+    },
   });
 
-  if (!response)
-    return res.status(400).json({ massage: "User tidak di temukan" });
+  if (!data) {
+    return res.status(400).json({ message: "User tidak ditemukan" });
+  }
+
+  if (password !== confirmPassword) {
+    return res.status(400).json({ message: "Password tidak sama" });
+  }
+
+  const hashedPassword = await argon.hash(password);
+
+  try {
+    const updateData = {
+      name,
+      email,
+      password: hashedPassword,
+    };
+
+    if (req.file) {
+      // cek apakah ada file sebelumnya
+      if (fs.existsSync(`./public/images/${data.img_profile}`)) {
+        fs.unlinkSync(`./public/images/${data.img_profile}`);
+      }
+      updateData.img_profile = req.file.filename;
+    }
+
+    const response = await prisma.user.update({
+      where: {
+        uuid: id,
+      },
+      data: updateData,
+      select: {
+        uuid: true,
+        name: true,
+        email: true,
+        img_profile: true,
+      },
+    });
+
+    res.status(200).json({
+      message: "User berhasil diupdate",
+      data_lama: data,
+      data_baru: response,
+    });
+  } catch (error) {
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
+
+    if (error.code === "P2002") {
+      return res.status(400).json({ message: "Email sudah digunakan" });
+    }
+    res.status(500).json({ message: error.message });
+  }
 };
 
 export const deleteUser = async (req, res) => {
