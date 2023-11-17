@@ -3,17 +3,16 @@ import {
   getUsersById,
   createUser,
   updateUser,
-  deleteUser,
 } from "../controllers/UserController.js";
 import { Router } from "express";
 import upload from "../config/UserImage.js";
+import { checkAuth } from "../middleware/CheckAuth.js";
 
 const router = Router();
 
-router.get("/users", getAllUsers);
-router.get("/users/:id", getUsersById);
-router.post("/users", upload.single("img_profile"), createUser);
-router.put("/users/:id", upload.single("img_profile"), updateUser);
-router.delete("/users/:id", deleteUser);
+router.get("/users", checkAuth, getAllUsers);
+router.get("/users/:id", checkAuth, getUsersById);
+router.post("/users", checkAuth, upload.single("image"), createUser);
+router.put("/users/:id", checkAuth, upload.single("image"), updateUser);
 
 export default router;

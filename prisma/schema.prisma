@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -18,16 +15,25 @@ model User {
   img_profile String?
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
+  url_profile String?
   posts       Post[]
 }
 
 model Post {
-  uuid        String   @id @default(uuid())
-  user_uuid   String
-  title       String
-  content     String
-  img_post    String?
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-  user        User     @relation(fields: [user_uuid], references: [uuid])
+  uuid       String   @id @default(uuid())
+  user_uuid  String
+  title      String
+  content    String
+  img_post   String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  url_post   String?
+  user       User     @relation(fields: [user_uuid], references: [uuid])
+}
+
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String
+  expiresAt DateTime
 }
