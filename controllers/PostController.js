@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export const getAllPost = async (req, res) => {
   try {
-    const response = await prisma.post.findMany({
+    const data = await prisma.post.findMany({
       select: {
         uuid: true,
         title: true,
@@ -23,7 +23,7 @@ export const getAllPost = async (req, res) => {
       },
     });
 
-    res.status(200).json({ data: response });
+    res.status(200).json({ data });
   } catch (error) {
     res.status(500).json({ massage: error.message });
   }
@@ -33,7 +33,7 @@ export const getPostById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const response = await prisma.post.findUnique({
+    const data = await prisma.post.findUnique({
       where: {
         uuid: id,
       },
@@ -46,7 +46,7 @@ export const getPostById = async (req, res) => {
       },
     });
 
-    res.status(200).json({ data: response });
+    res.status(200).json({ data });
   } catch (error) {
     res.status(500).json({ massage: error.message });
   }
@@ -98,10 +98,7 @@ export const createPost = async (req, res) => {
       });
     }
 
-    res.status(500).json({
-      message: "Error creating post",
-      error: error.message,
-    });
+    res.status(500).json({ message: error.message });
   }
 };
 

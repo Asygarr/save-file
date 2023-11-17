@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 export const getAllUsers = async (req, res) => {
   try {
-    const response = await prisma.user.findMany({
+    const data = await prisma.user.findMany({
       select: {
         uuid: true,
         name: true,
@@ -16,7 +16,7 @@ export const getAllUsers = async (req, res) => {
       },
     });
 
-    res.status(200).json({ data: response });
+    res.status(200).json({ data });
   } catch (error) {
     res.status(500).json({ massage: error.message });
   }
@@ -26,7 +26,7 @@ export const getUsersById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const response = await prisma.user.findUnique({
+    const data = await prisma.user.findUnique({
       select: {
         uuid: true,
         name: true,
@@ -38,7 +38,7 @@ export const getUsersById = async (req, res) => {
         uuid: id,
       },
     });
-    res.status(200).json({ data: response });
+    res.status(200).json({ data });
   } catch (error) {
     res.status(500).json({ massage: error.message });
   }
@@ -66,7 +66,7 @@ export const createUser = async (req, res) => {
       ? `${req.protocol}://${req.get("host")}/images/users/${req.file.filename}`
       : null;
 
-    const response = await prisma.user.create({
+    const data = await prisma.user.create({
       data: {
         name,
         email,
@@ -83,7 +83,7 @@ export const createUser = async (req, res) => {
       },
     });
 
-    res.status(200).json({ massage: "User berhasil di buat", data: response });
+    res.status(200).json({ massage: "User berhasil di buat", data });
   } catch (error) {
     if (req.file) {
       fs.unlinkSync(req.file.path);
@@ -104,7 +104,7 @@ export const updateUser = async (req, res) => {
     return res.status(400).json({ message: "Data tidak boleh kosong" });
   }
 
-  const data = await prisma.user.findUnique({
+  const dataLama = await prisma.user.findUnique({
     where: {
       uuid: id,
     },
@@ -117,7 +117,7 @@ export const updateUser = async (req, res) => {
     },
   });
 
-  if (!data) {
+  if (!dataLama) {
     return res.status(400).json({ message: "User tidak ditemukan" });
   }
 
@@ -132,7 +132,7 @@ export const updateUser = async (req, res) => {
     let image = "";
 
     if (req.file) {
-      const imagePath = `./public/images/${data.img_profile}`;
+      const imagePath = `./public/images/${dataLama.img_profile}`;
 
       if (fs.existsSync(imagePath)) {
         fs.unlinkSync(imagePath);
@@ -143,11 +143,11 @@ export const updateUser = async (req, res) => {
         req.file.filename
       }`;
     } else {
-      image = data.img_profile;
-      urlProfile = data.url_profile;
+      image = dataLama.img_profile;
+      urlProfile = dataLama.url_profile;
     }
 
-    const response = await prisma.user.update({
+    const data = await prisma.user.update({
       where: {
         uuid: id,
       },
@@ -169,8 +169,7 @@ export const updateUser = async (req, res) => {
 
     res.status(200).json({
       message: "User berhasil diupdate",
-      data_lama: data,
-      data_baru: response,
+      data,
     });
   } catch (error) {
     if (req.file) {
@@ -183,4 +182,3 @@ export const updateUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
