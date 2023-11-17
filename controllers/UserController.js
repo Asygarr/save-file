@@ -12,8 +12,10 @@ export const getAllUsers = async (req, res) => {
         name: true,
         email: true,
         img_profile: true,
+        url_profile: true,
       },
     });
+
     res.status(200).json({ data: response });
   } catch (error) {
     res.status(500).json({ massage: error.message });
@@ -30,6 +32,7 @@ export const getUsersById = async (req, res) => {
         name: true,
         email: true,
         img_profile: true,
+        url_profile: true,
       },
       where: {
         uuid: id,
@@ -43,7 +46,6 @@ export const getUsersById = async (req, res) => {
 
 export const createUser = async (req, res) => {
   const { name, email, password, confirmPassword } = req.body;
-  console.log(req.file);
 
   if (!name || !email || !password || !confirmPassword) {
     return res.status(400).json({ message: "Data tidak boleh kosong" });
@@ -59,23 +61,25 @@ export const createUser = async (req, res) => {
   const hashedPassword = await argon.hash(password);
 
   try {
-    const createData = {
-      name,
-      email,
-      password: hashedPassword,
-    };
-
-    if (req.file) {
-      createData.img_profile = req.file.filename;
-    }
+    const image = req.file ? req.file.filename : null;
+    const urlProfile = req.file
+      ? `${req.protocol}://${req.get("host")}/images/users/${req.file.filename}`
+      : null;
 
     const response = await prisma.user.create({
-      data: createData,
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        img_profile: image,
+        url_profile: urlProfile,
+      },
       select: {
         uuid: true,
         name: true,
         email: true,
         img_profile: true,
+        url_profile: true,
       },
     });
 
@@ -109,6 +113,7 @@ export const updateUser = async (req, res) => {
       name: true,
       email: true,
       img_profile: true,
+      url_profile: true,
     },
   });
 
@@ -123,30 +128,42 @@ export const updateUser = async (req, res) => {
   const hashedPassword = await argon.hash(password);
 
   try {
-    const updateData = {
-      name,
-      email,
-      password: hashedPassword,
-    };
+    let urlProfile = "";
+    let image = "";
 
     if (req.file) {
-      // cek apakah ada file sebelumnya
-      if (fs.existsSync(`./public/images/${data.img_profile}`)) {
-        fs.unlinkSync(`./public/images/${data.img_profile}`);
+      const imagePath = `./public/images/${data.img_profile}`;
+
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
       }
-      updateData.img_profile = req.file.filename;
+
+      image = req.file.filename;
+      urlProfile = `${req.protocol}://${req.get("host")}/images/users/${
+        req.file.filename
+      }`;
+    } else {
+      image = data.img_profile;
+      urlProfile = data.url_profile;
     }
 
     const response = await prisma.user.update({
       where: {
         uuid: id,
       },
-      data: updateData,
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        img_profile: image,
+        url_profile: urlProfile,
+      },
       select: {
         uuid: true,
         name: true,
         email: true,
         img_profile: true,
+        url_profile: true,
       },
     });
 
@@ -167,27 +184,3 @@ export const updateUser = async (req, res) => {
   }
 };
 
-export const deleteUser = async (req, res) => {
-  const { id } = req.params;
-
-  const response = await prisma.user.findUnique({
-    where: {
-      uuid: id,
-    },
-  });
-
-  if (!response)
-    return res.status(400).json({ massage: "User tidak di temukan" });
-
-  try {
-    await prisma.user.delete({
-      where: {
-        uuid: id,
-      },
-    });
-
-    res.status(200).json({ massage: "User berhasil di hapus" });
-  } catch (error) {
-    res.status(500).json({ massage: error.message });
-  }
-};
