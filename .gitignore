@@ -1,4 +1,7 @@
-node_modules
-# Keep environment variables out of version control
+# files
 .env
+
+# folders
 public
+client
+node_modules
