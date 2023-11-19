@@ -18,7 +18,7 @@ export const getAllUsers = async (req, res) => {
 
     res.status(200).json({ data });
   } catch (error) {
-    res.status(500).json({ massage: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -40,7 +40,7 @@ export const getUsersById = async (req, res) => {
     });
     res.status(200).json({ data });
   } catch (error) {
-    res.status(500).json({ massage: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -55,7 +55,7 @@ export const createUser = async (req, res) => {
     if (req.file) {
       fs.unlinkSync(req.file.path);
     }
-    return res.status(400).json({ massage: "Password tidak sama" });
+    return res.status(400).json({ message: "Password tidak sama" });
   }
 
   const hashedPassword = await argon.hash(password);
@@ -83,16 +83,16 @@ export const createUser = async (req, res) => {
       },
     });
 
-    res.status(200).json({ massage: "User berhasil di buat", data });
+    res.status(200).json({ message: "User berhasil di buat", data });
   } catch (error) {
     if (req.file) {
       fs.unlinkSync(req.file.path);
     }
 
     if (error.code === "P2002") {
-      return res.status(400).json({ massage: "Email sudah di gunakan" });
+      return res.status(400).json({ message: "Email sudah di gunakan" });
     }
-    res.status(500).json({ massage: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 

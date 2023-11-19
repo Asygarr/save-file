@@ -4,7 +4,6 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import cors from "cors";
 import dotenv from "dotenv";
-import path from "path";
 import UserRoute from "../routes/user.routes.js";
 import AuthUser from "../routes/auth.routes.js";
 import PostRoute from "../routes/post.routes.js";

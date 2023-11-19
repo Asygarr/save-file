@@ -25,7 +25,7 @@ export const getAllPost = async (req, res) => {
 
     res.status(200).json({ data });
   } catch (error) {
-    res.status(500).json({ massage: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -48,7 +48,7 @@ export const getPostById = async (req, res) => {
 
     res.status(200).json({ data });
   } catch (error) {
-    res.status(500).json({ massage: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -64,7 +64,7 @@ export const createPost = async (req, res) => {
       });
     }
 
-    return res.status(400).json({ massage: "Tolong di isi terlebih dahulu" });
+    return res.status(400).json({ message: "Tolong di isi terlebih dahulu" });
   }
 
   const images = req.files.map((img) => ({
@@ -90,7 +90,7 @@ export const createPost = async (req, res) => {
       },
     });
 
-    res.status(200).json({ massage: "Post telah dibuat", data });
+    res.status(200).json({ message: "Post telah dibuat", data });
   } catch (error) {
     if (req.files) {
       req.files.map((img) => {
@@ -114,7 +114,7 @@ export const updatePost = async (req, res) => {
       });
     }
 
-    return res.status(400).json({ massage: "Tolong di isi terlebih dahulu" });
+    return res.status(400).json({ message: "Tolong di isi terlebih dahulu" });
   }
 
   const cekPost = await prisma.post.findUnique({
@@ -130,7 +130,7 @@ export const updatePost = async (req, res) => {
       });
     }
 
-    return res.status(400).json({ massage: "Post tidak ditemukan" });
+    return res.status(400).json({ message: "Post tidak ditemukan" });
   }
 
   if (cekPost.user_uuid !== req.user) {
@@ -140,7 +140,7 @@ export const updatePost = async (req, res) => {
       });
     }
 
-    return res.status(400).json({ massage: "Post ini bukan milik anda" });
+    return res.status(400).json({ message: "Post ini bukan milik anda" });
   }
 
   const images = req.files.map((img) => ({
@@ -151,15 +151,13 @@ export const updatePost = async (req, res) => {
     return `${req.protocol}://${req.get("host")}/images/posts/${img.filename}`;
   });
 
-  if (req.files) {
-    if (cekPost.img_post) {
-      const images = cekPost.img_post.split(", ");
-      images.map((img) => {
-        if (!fs.existsSync(`./public/images/posts/${img}`)) return;
+  if (req.files && cekPost.img_post) {
+    const images = cekPost.img_post.split(", ");
+    images.map((img) => {
+      if (!fs.existsSync(`./public/images/posts/${img}`)) return;
 
-        fs.unlinkSync(`./public/images/posts/${img}`);
-      });
-    }
+      fs.unlinkSync(`./public/images/posts/${img}`);
+    });
   }
 
   try {
@@ -195,7 +193,7 @@ export const updatePost = async (req, res) => {
       },
     });
 
-    res.status(200).json({ massage: "Post berhasil diupdate", data });
+    res.status(200).json({ message: "Post berhasil diupdate", data });
   } catch (error) {
     if (req.files) {
       req.files.map((img) => {
@@ -203,7 +201,7 @@ export const updatePost = async (req, res) => {
       });
     }
 
-    res.status(500).json({ massage: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -218,10 +216,10 @@ export const deletePost = async (req, res) => {
     });
 
     if (!cekPost)
-      return res.status(400).json({ massage: "Post tidak ditemukan" });
+      return res.status(400).json({ message: "Post tidak ditemukan" });
 
     if (cekPost.user_uuid !== req.user)
-      return res.status(400).json({ massage: "Post ini bukan milik anda" });
+      return res.status(400).json({ message: "Post ini bukan milik anda" });
 
     if (cekPost.img_post) {
       const images = cekPost.img_post.split(", ");
@@ -251,8 +249,8 @@ export const deletePost = async (req, res) => {
       },
     });
 
-    res.status(200).json({ massage: "Post berhasil dihapus", deletePost });
+    res.status(200).json({ message: "Post berhasil dihapus", deletePost });
   } catch (error) {
-    res.status(500).json({ massage: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
