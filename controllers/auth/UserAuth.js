@@ -7,7 +7,7 @@ export const Login = async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password)
-    return res.status(400).json({ massage: "Tolong di isi semua " });
+    return res.status(400).json({ message: "Tolong di isi semua " });
 
   const loginUser = await prisma.user.findUnique({
     where: {
@@ -16,12 +16,12 @@ export const Login = async (req, res) => {
   });
 
   if (!loginUser)
-    return res.status(400).json({ massage: "Email tidak ditemukan" });
+    return res.status(400).json({ message: "Email tidak ditemukan" });
 
   const validasiPassword = await argon.verify(loginUser.password, password);
 
   if (!validasiPassword)
-    return res.status(200).json({ massage: "Password salah" });
+    return res.status(200).json({ message: "Password salah" });
 
   req.session.user = loginUser.uuid;
   const dataLogin = await prisma.user.findUnique({
@@ -36,12 +36,12 @@ export const Login = async (req, res) => {
     },
   });
 
-  res.status(200).json({ massage: "Login berhasil", dataLogin });
+  res.status(200).json({ message: "Login berhasil", dataLogin });
 };
 
 export const Me = async (req, res) => {
   if (!req.session.user)
-    return res.status(400).json({ massage: "Tolong login terlebih dahulu" });
+    return res.status(400).json({ message: "Tolong login terlebih dahulu" });
 
   try {
     const dataMe = await prisma.user.findUnique({
@@ -56,16 +56,16 @@ export const Me = async (req, res) => {
       },
     });
 
-    res.status(200).json({ massage: "Data user yang sedang login", dataMe });
+    res.status(200).json({ message: "Data user yang sedang login", dataMe });
   } catch (error) {
-    res.status(500).json({ massage: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
 export const Logout = async (req, res) => {
   req.session.destroy((err) => {
-    if (err) return res.status(404).json({ massage: err.massage });
+    if (err) return res.status(404).json({ message: err.message });
 
-    res.status(200).json({ massage: "Logout berhasil" });
+    res.status(200).json({ message: "Logout berhasil" });
   });
 };

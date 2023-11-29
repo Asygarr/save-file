@@ -12,7 +12,7 @@ const router = Router();
 
 router.get("/users", checkAuth, getAllUsers);
 router.get("/users/:id", checkAuth, getUsersById);
-router.post("/users", checkAuth, upload.single("image"), createUser);
+router.post("/users", upload.single("image"), createUser);
 router.put("/users/:id", checkAuth, upload.single("image"), updateUser);
 
 export default router;
